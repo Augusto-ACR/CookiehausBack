@@ -23,10 +23,10 @@ export class Producto {
   @Column({ type: 'varchar', length: 20 })
   categoria!: ProductoCategoria;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   precioVenta!: number;
 
-  @Column({ type: 'double', default: 0 })
+  @Column({ type: 'double precision', default: 0 })
   stock!: number;
 
   @Column({ type: 'int' })

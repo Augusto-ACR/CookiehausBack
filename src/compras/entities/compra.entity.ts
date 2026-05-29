@@ -12,7 +12,7 @@ export class Compra {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   total!: number;
 
   @Column({ type: 'varchar', length: 200, nullable: true })

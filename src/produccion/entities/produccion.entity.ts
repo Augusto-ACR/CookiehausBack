@@ -26,7 +26,7 @@ export class Produccion {
   @Column({ type: 'int' })
   galletitasProducidas!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   costoEstimado!: number;
 
   @Column({ type: 'varchar', length: 400, nullable: true })

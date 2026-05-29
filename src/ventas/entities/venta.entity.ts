@@ -12,13 +12,13 @@ export class Venta {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   totalBruto!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   total!: number;
 
-  @Column({ type: 'double', default: 0 })
+  @Column({ type: 'double precision', default: 0 })
   descuentoPorcentaje!: number;
 
   @Column({ type: 'varchar', length: 200, nullable: true })

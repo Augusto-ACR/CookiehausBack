@@ -24,9 +24,9 @@ export class VentaItem {
   @Column({ type: 'int' })
   cantidad!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   precioUnitario!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   subtotal!: number;
 }

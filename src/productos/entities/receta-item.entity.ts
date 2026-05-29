@@ -21,6 +21,6 @@ export class RecetaItem {
   @JoinColumn({ name: 'insumoId' })
   insumo!: Insumo;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   cantidadPorHornada!: number;
 }

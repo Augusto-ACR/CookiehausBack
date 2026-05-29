@@ -21,12 +21,12 @@ export class CompraItem {
   @JoinColumn({ name: 'insumoId' })
   insumo!: Insumo;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   cantidad!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   precioUnitario!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   subtotal!: number;
 }

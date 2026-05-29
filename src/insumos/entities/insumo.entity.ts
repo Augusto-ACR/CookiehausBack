@@ -21,13 +21,13 @@ export class Insumo {
   @Column({ type: 'varchar', length: 20 })
   unidadMedida!: UnidadMedida;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   stockActual!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   stockMinimo!: number;
 
-  @Column({ type: 'double' })
+  @Column({ type: 'double precision' })
   precioPorUnidad!: number;
 
   @CreateDateColumn({ type: 'timestamp' })
