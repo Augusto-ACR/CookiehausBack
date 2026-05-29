@@ -92,8 +92,12 @@ async function bootstrap() {
     }),
   );
 
-  const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT', 3000);
-  await app.listen(port);
+const configService = app.get(ConfigService);
+  
+  // 1. Lo leemos como string (o usamos process.env directo) y lo parseamos a número
+  const port = parseInt(configService.get<string>('PORT') || '3000', 10);
+  
+  // 2. Le agregamos el '0.0.0.0' para que escuche el tráfico de Railway
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();
