@@ -5,6 +5,8 @@ import {
   ValidationError,
   ValidationPipe,
 } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 const extraerNumero = (texto: string) => {
@@ -71,10 +73,16 @@ const recolectarErrores = (errores: ValidationError[], ruta = ''): string[] => {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService);
+  const frontendUrl = configService.get<string>('FRONTEND_URL')!;
+
   app.enableCors({
-    origin: true,
-    credentials: false,
+    origin: frontendUrl,
+    credentials: true,
   });
+  app.use(helmet({ crossOriginResourcePolicy: false }));
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -92,12 +100,7 @@ async function bootstrap() {
     }),
   );
 
-const configService = app.get(ConfigService);
-  
-  // 1. Lo leemos como string (o usamos process.env directo) y lo parseamos a número
   const port = parseInt(configService.get<string>('PORT') || '3000', 10);
-  
-  // 2. Le agregamos el '0.0.0.0' para que escuche el tráfico de Railway
   await app.listen(port, '0.0.0.0');
 }
 bootstrap();

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -26,11 +27,23 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       nombre: user.nombre,
+      role: user.role,
     };
 
     return {
       access_token: await this.jwtService.signAsync(payload),
       user: this.usersService.toSafeUser(user),
     };
+  }
+
+  async verifyPassword(email: string, password: string): Promise<void> {
+    const user = await this.usersService.findByEmailWithPassword(email);
+    if (!user || !user.password) {
+      throw new UnauthorizedException('Contraseña incorrecta.');
+    }
+    const valid = await bcrypt.compare(password, user.password);
+    if (!valid) {
+      throw new UnauthorizedException('Contraseña incorrecta.');
+    }
   }
 }

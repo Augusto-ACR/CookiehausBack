@@ -9,6 +9,7 @@ import { Compra } from './entities/compra.entity';
 import { CompraItem } from './entities/compra-item.entity';
 import { Insumo } from '../insumos/entities/insumo.entity';
 import { CreateCompraDto } from './dto/create-compra.dto';
+import { UpdateCompraDto } from './dto/update-compra.dto';
 
 @Injectable()
 export class ComprasService {
@@ -106,6 +107,34 @@ export class ComprasService {
     });
 
     return this.findOne(compraId);
+  }
+
+  async update(id: number, dto: UpdateCompraDto): Promise<Compra> {
+    const compra = await this.findOne(id);
+    compra.observaciones = dto.observaciones !== undefined
+      ? (dto.observaciones?.trim() || null)
+      : compra.observaciones;
+    await this.comprasRepository.save(compra);
+    return this.findOne(id);
+  }
+
+  async remove(id: number): Promise<{ message: string }> {
+    await this.comprasRepository.manager.transaction(async (manager) => {
+      const compra = await manager.findOne(Compra, {
+        where: { id },
+        relations: { items: true },
+      });
+
+      if (!compra) throw new NotFoundException('Compra no encontrada.');
+
+      for (const item of compra.items) {
+        await manager.decrement(Insumo, { id: item.insumoId }, 'stockActual', item.cantidad);
+      }
+
+      await manager.delete(Compra, id);
+    });
+
+    return { message: 'Compra eliminada y stock revertido correctamente.' };
   }
 
   private validateDuplicados(ids: number[]) {

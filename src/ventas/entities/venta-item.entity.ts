@@ -27,6 +27,9 @@ export class VentaItem {
   @Column({ type: 'double precision' })
   precioUnitario!: number;
 
+  @Column({ type: 'double precision', default: 0 })
+  descuentoPorcentaje!: number;
+
   @Column({ type: 'double precision' })
   subtotal!: number;
 }

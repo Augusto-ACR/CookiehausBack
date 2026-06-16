@@ -75,12 +75,16 @@ export class VentasService {
         }
 
         const precioUnitario = producto.precioVenta;
-        const subtotal = precioUnitario * item.cantidad;
+        const itemDescuento = item.descuentoPorcentaje ?? 0;
+        const subtotal = Number(
+          (precioUnitario * item.cantidad * (1 - itemDescuento / 100)).toFixed(2),
+        );
 
         return {
           productoId: item.productoId,
           cantidad: item.cantidad,
           precioUnitario,
+          descuentoPorcentaje: itemDescuento,
           subtotal,
         };
       });
@@ -94,16 +98,33 @@ export class VentasService {
         );
       }
 
-      const total = itemsProcesados.reduce((acc, item) => acc + item.subtotal, 0);
-      const descuentoPorcentaje = createVentaDto.descuentoPorcentaje ?? 0;
-      const descuentoMonto = (total * descuentoPorcentaje) / 100;
-      const totalFinal = Number((total - descuentoMonto).toFixed(2));
+      const esBox = createVentaDto.esBox ?? false;
+      const totalBruto = itemsProcesados.reduce((acc, item) => acc + item.subtotal, 0);
+
+      let totalFinal: number;
+      let descuentoPorcentaje: number;
+
+      if (esBox) {
+        if (createVentaDto.precioBox == null || createVentaDto.precioBox < 0) {
+          throw new BadRequestException('Las ventas en formato box requieren un precio de box válido.');
+        }
+        totalFinal = Number(createVentaDto.precioBox.toFixed(2));
+        descuentoPorcentaje = 0;
+      } else {
+        descuentoPorcentaje = createVentaDto.descuentoPorcentaje ?? 0;
+        const descuentoMonto = (totalBruto * descuentoPorcentaje) / 100;
+        totalFinal = Number((totalBruto - descuentoMonto).toFixed(2));
+      }
 
       const venta = manager.create(Venta, {
-        totalBruto: total,
+        totalBruto,
         total: totalFinal,
         descuentoPorcentaje,
+        canal: createVentaDto.canal ?? 'otro',
+        cobrado: createVentaDto.cobrado ?? true,
         observaciones: createVentaDto.observaciones?.trim() || null,
+        esBox,
+        precioBox: esBox ? totalFinal : null,
       });
 
       const savedVenta = await manager.save(Venta, venta);
@@ -121,6 +142,13 @@ export class VentasService {
     });
 
     return this.findOne(ventaId);
+  }
+
+  async updateCobrado(id: number, cobrado: boolean): Promise<Venta> {
+    const venta = await this.ventasRepository.findOne({ where: { id } });
+    if (!venta) throw new NotFoundException('Venta no encontrada.');
+    await this.ventasRepository.update(id, { cobrado });
+    return this.findOne(id);
   }
 
   async remove(id: number): Promise<{ message: string }> {

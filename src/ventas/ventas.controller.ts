@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -30,6 +31,14 @@ export class VentasController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.ventasService.findOne(id);
+  }
+
+  @Patch(':id/cobrado')
+  toggleCobrado(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('cobrado') cobrado: boolean,
+  ) {
+    return this.ventasService.updateCobrado(id, cobrado);
   }
 
   @Delete(':id')

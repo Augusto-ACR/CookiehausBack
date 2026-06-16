@@ -34,6 +34,8 @@ export const envValidationSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string()
     .valid('1d', '2d', '3d', '4d', '5d', '6d', '7d')
     .default('7d'),
+  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  FRONTEND_URL: Joi.string().uri().required(),
 });
 
 export const envValidationOptions = {

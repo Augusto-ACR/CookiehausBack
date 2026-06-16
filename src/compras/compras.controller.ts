@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ComprasService } from './compras.service';
 import { CreateCompraDto } from './dto/create-compra.dto';
+import { UpdateCompraDto } from './dto/update-compra.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('compras')
@@ -21,5 +22,18 @@ export class ComprasController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.comprasService.findOne(id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCompraDto: UpdateCompraDto,
+  ) {
+    return this.comprasService.update(id, updateCompraDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.comprasService.remove(id);
   }
 }
