@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import * as express from 'express';
 import { AppModule } from './app.module';
 
 const extraerNumero = (texto: string) => {
@@ -77,9 +78,21 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const frontendUrl = configService.get<string>('FRONTEND_URL')!;
 
-  app.enableCors({
-    origin: frontendUrl,
-    credentials: true,
+  // CORS manual antes de Helmet para evitar que este pise los headers
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const origin = req.headers.origin as string | undefined;
+    if (origin === frontendUrl) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,Cookie');
+      res.setHeader('Access-Control-Max-Age', '86400');
+    }
+    if (req.method === 'OPTIONS') {
+      res.status(204).end();
+      return;
+    }
+    next();
   });
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cookieParser());
