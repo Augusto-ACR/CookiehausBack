@@ -1,7 +1,8 @@
 {
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "buildCommand": "npm install && npm run build"
+    "buildCommand": "npm install && npm run build",
+    "installCommand": "echo skip"
   },
   "deploy": {
     "startCommand": "node dist/main"
