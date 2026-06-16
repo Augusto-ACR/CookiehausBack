@@ -3,6 +3,7 @@ import {
   IsArray,
   IsBoolean,
   IsIn,
+  IsInt,
   IsNumber,
   IsOptional,
   IsString,
@@ -57,4 +58,14 @@ export class CreateVentaDto {
   @IsNumber()
   @Min(0)
   precioBox?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  boxInsumoId?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  cantidadBox?: number;
 }
