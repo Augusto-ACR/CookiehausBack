@@ -8,6 +8,8 @@ import { In, Repository } from 'typeorm';
 import { Venta } from './entities/venta.entity';
 import { VentaItem } from './entities/venta-item.entity';
 import { Producto } from '../productos/entities/producto.entity';
+import { RecetaItem } from '../productos/entities/receta-item.entity';
+import { Insumo } from '../insumos/entities/insumo.entity';
 import { CreateVentaDto } from './dto/create-venta.dto';
 
 @Injectable()
@@ -19,6 +21,10 @@ export class VentasService {
     private readonly ventaItemsRepository: Repository<VentaItem>,
     @InjectRepository(Producto)
     private readonly productosRepository: Repository<Producto>,
+    @InjectRepository(RecetaItem)
+    private readonly recetaItemsRepository: Repository<RecetaItem>,
+    @InjectRepository(Insumo)
+    private readonly insumosRepository: Repository<Insumo>,
   ) {}
 
   findAll(): Promise<Venta[]> {
@@ -99,6 +105,58 @@ export class VentasService {
       }
 
       const esBox = createVentaDto.esBox ?? false;
+
+      if (esBox) {
+        const recetaItems = await manager.find(RecetaItem, {
+          where: { productoId: In(productoIds) },
+        });
+
+        const requerimientosInsumos = new Map<number, number>();
+        for (const item of itemsProcesados) {
+          const producto = productosById.get(item.productoId)!;
+          const recetaDelProducto = recetaItems.filter((ri) => ri.productoId === item.productoId);
+          for (const ri of recetaDelProducto) {
+            const requerido = ri.cantidadPorHornada * (item.cantidad / producto.rindePorHornada);
+            requerimientosInsumos.set(
+              ri.insumoId,
+              (requerimientosInsumos.get(ri.insumoId) ?? 0) + requerido,
+            );
+          }
+        }
+
+        const insumoIds = [...requerimientosInsumos.keys()];
+        if (insumoIds.length > 0) {
+          const insumos = await manager
+            .getRepository(Insumo)
+            .createQueryBuilder('insumo')
+            .where({ id: In(insumoIds) })
+            .setLock('pessimistic_write')
+            .getMany();
+
+          const insumosById = new Map(insumos.map((insumo) => [insumo.id, insumo]));
+
+          const faltantes: string[] = [];
+          for (const [insumoId, requerido] of requerimientosInsumos) {
+            const insumo = insumosById.get(insumoId);
+            if (insumo && insumo.stockActual < requerido) {
+              faltantes.push(
+                `${insumo.nombre}: requiere ${requerido.toFixed(2)} ${insumo.unidadMedida} y hay ${insumo.stockActual}`,
+              );
+            }
+          }
+
+          if (faltantes.length > 0) {
+            throw new BadRequestException(
+              `Stock de insumos insuficiente para la venta box. ${faltantes.join(' | ')}`,
+            );
+          }
+
+          for (const [insumoId, requerido] of requerimientosInsumos) {
+            await manager.decrement(Insumo, { id: insumoId }, 'stockActual', requerido);
+          }
+        }
+      }
+
       const totalBruto = itemsProcesados.reduce((acc, item) => acc + item.subtotal, 0);
 
       let totalFinal: number;
