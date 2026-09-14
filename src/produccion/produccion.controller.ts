@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -29,5 +30,11 @@ export class ProduccionController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.produccionService.findOne(id);
+  }
+
+  // Igual que eliminar una compra: el front pide la contraseña (verify-password) antes.
+  @Delete(':id')
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.produccionService.remove(id);
   }
 }

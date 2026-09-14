@@ -4,9 +4,11 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Producto } from '../../productos/entities/producto.entity';
+import { ProduccionConsumo } from './produccion-consumo.entity';
 
 @Entity('producciones')
 export class Produccion {
@@ -34,4 +36,8 @@ export class Produccion {
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
+
+  // Vacío en producciones anteriores a la tabla produccion_consumos.
+  @OneToMany(() => ProduccionConsumo, (consumo) => consumo.produccion)
+  consumos!: ProduccionConsumo[];
 }

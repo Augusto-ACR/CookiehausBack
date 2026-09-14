@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
@@ -30,5 +31,11 @@ export const getDatabaseConfig = async (
     ssl,
     autoLoadEntities: true,
     synchronize,
+    // Migraciones (src/migrations → dist/migrations). Se aplican solas al arrancar el
+    // backend, antes de atender pedidos: el deploy (git pull + up --build) no necesita
+    // un paso extra. Si una falla, el backend no arranca: revisar `docker logs`.
+    // Solo .js: tanto la app como la CLI corren sobre dist/ (el build también emite .d.ts).
+    migrations: [join(__dirname, '..', 'migrations', '*.js')],
+    migrationsRun: true,
   };
 };
